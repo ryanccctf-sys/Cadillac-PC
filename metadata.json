@@ -1,0 +1,8 @@
+{
+  "name": "Remix Copy of 智能工牌-存档",
+  "description": "Intelligent Smart Badge Management System for Automotive Dealerships with real-time monitoring, AI analysis, and lead management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
