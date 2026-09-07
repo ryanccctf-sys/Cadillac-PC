@@ -91,9 +91,9 @@ export const TrainingInspectionBoard: React.FC = () => {
   const [pageSize, setPageSize] = useState<number>(20);
 
   // --- 2 Specific Filters for 数据明细模块 ---
-  // 1. 视频比对录音匹配率: 全部 | 大于90% | 大于80% | 小于80%
+  // 1. 视频比对录音匹配率: 全部 | 大于90% | 大于等于80%小于90% | 小于80%
   const [videoMatchFilter, setVideoMatchFilter] = useState<string>('全部');
-  // 2. 参训照片与人数匹配率: 全部 | 大于90% | 大于80% | 小于80%
+  // 2. 参训照片与人数匹配率: 全部 | 大于90% | 大于等于80%小于90% | 小于80%
   const [photoMatchFilter, setPhotoMatchFilter] = useState<string>('全部');
   // 3. 场次明细数据专属转训时间筛选 (开始日期 - 结束日期)
   const [detailStartDate, setDetailStartDate] = useState<string>('');
@@ -194,11 +194,11 @@ export const TrainingInspectionBoard: React.FC = () => {
   const tableFilteredAggregatedRecords = useMemo(() => {
     return filteredRecords.filter(r => {
       if (videoMatchFilter === '大于90%' && r.videoMatchRate <= 90) return false;
-      if (videoMatchFilter === '大于80%' && r.videoMatchRate <= 80) return false;
+      if (videoMatchFilter === '大于等于80%小于90%' && (r.videoMatchRate < 80 || r.videoMatchRate >= 90)) return false;
       if (videoMatchFilter === '小于80%' && r.videoMatchRate >= 80) return false;
 
       if (photoMatchFilter === '大于90%' && r.photoMatchRate <= 90) return false;
-      if (photoMatchFilter === '大于80%' && r.photoMatchRate <= 80) return false;
+      if (photoMatchFilter === '大于等于80%小于90%' && (r.photoMatchRate < 80 || r.photoMatchRate >= 90)) return false;
       if (photoMatchFilter === '小于80%' && r.photoMatchRate >= 80) return false;
 
       return true;
@@ -251,11 +251,11 @@ export const TrainingInspectionBoard: React.FC = () => {
       if (detailEndDate && r.date > detailEndDate) return false;
 
       if (videoMatchFilter === '大于90%' && r.videoMatchRate <= 90) return false;
-      if (videoMatchFilter === '大于80%' && r.videoMatchRate <= 80) return false;
+      if (videoMatchFilter === '大于等于80%小于90%' && (r.videoMatchRate < 80 || r.videoMatchRate >= 90)) return false;
       if (videoMatchFilter === '小于80%' && r.videoMatchRate >= 80) return false;
 
       if (photoMatchFilter === '大于90%' && r.photoMatchRate <= 90) return false;
-      if (photoMatchFilter === '大于80%' && r.photoMatchRate <= 80) return false;
+      if (photoMatchFilter === '大于等于80%小于90%' && (r.photoMatchRate < 80 || r.photoMatchRate >= 90)) return false;
       if (photoMatchFilter === '小于80%' && r.photoMatchRate >= 80) return false;
 
       return true;
@@ -420,9 +420,6 @@ export const TrainingInspectionBoard: React.FC = () => {
               <h1 className="text-xl font-bold text-slate-900 dark:text-white">
                 转训检核看板
               </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                实时汇总全国经销商转训完成进度、AI视频/照片合规比对与13项质检开口执行表现
-              </p>
             </div>
           </div>
         </div>
@@ -787,7 +784,7 @@ export const TrainingInspectionBoard: React.FC = () => {
               >
                 <option value="全部">全部</option>
                 <option value="大于90%">大于90%</option>
-                <option value="大于80%">大于80%</option>
+                <option value="大于等于80%小于90%">大于等于80%小于90%</option>
                 <option value="小于80%">小于80%</option>
               </select>
             </div>
@@ -807,7 +804,7 @@ export const TrainingInspectionBoard: React.FC = () => {
               >
                 <option value="全部">全部</option>
                 <option value="大于90%">大于90%</option>
-                <option value="大于80%">大于80%</option>
+                <option value="大于等于80%小于90%">大于等于80%小于90%</option>
                 <option value="小于80%">小于80%</option>
               </select>
             </div>
@@ -1406,6 +1403,7 @@ export const TrainingInspectionBoard: React.FC = () => {
                     <th className="py-3 px-3">转训时间</th>
                     <th className="py-3 px-3 text-center">视频比对录音匹配率</th>
                     <th className="py-3 px-3 text-center">状态</th>
+                    <th className="py-3 px-3 text-center w-28">操作</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-slate-700 dark:text-slate-200">
@@ -1423,6 +1421,24 @@ export const TrainingInspectionBoard: React.FC = () => {
                         <span className="px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 text-[10px] font-bold">
                           比对异常
                         </span>
+                      </td>
+                      <td className="py-3 px-3 text-center">
+                        <button
+                          onClick={() => {
+                            setSelectedMediaRecord({
+                              ...r,
+                              _fromAnomalyModal: true
+                            });
+                            setMediaActiveSession(1);
+                            setIsAudioPlaying(false);
+                            setIsVideoPlaying(false);
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-300 rounded-xl text-xs font-bold transition-all cursor-pointer border border-blue-200/80 dark:border-blue-800 shadow-2xs hover:shadow-xs active:scale-98"
+                          title="查看转训检核多模态档案"
+                        >
+                          <Video size={13} className="text-blue-600 dark:text-blue-400" />
+                          <span>检核档案</span>
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -1447,7 +1463,7 @@ export const TrainingInspectionBoard: React.FC = () => {
       {/* 弹窗 4: 参训人数比对异常明细 */}
       {activeModal === 'photoAnomaly' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[85vh]">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl w-full max-w-6xl overflow-hidden flex flex-col max-h-[85vh]">
             {/* Header */}
             <div className="px-6 py-4.5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -1501,6 +1517,7 @@ export const TrainingInspectionBoard: React.FC = () => {
                     <th className="py-3 px-3 text-center">系统填写人数</th>
                     <th className="py-3 px-3 text-center">照片识别人数</th>
                     <th className="py-3 px-3 text-center">参训照片与人数匹配率</th>
+                    <th className="py-3 px-3 text-center w-28">操作</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-slate-700 dark:text-slate-200">
@@ -1520,6 +1537,24 @@ export const TrainingInspectionBoard: React.FC = () => {
                       </td>
                       <td className="py-3 px-3 text-center font-mono font-bold text-amber-600 dark:text-amber-400">
                         {r.photoMatchRate}%
+                      </td>
+                      <td className="py-3 px-3 text-center">
+                        <button
+                          onClick={() => {
+                            setSelectedMediaRecord({
+                              ...r,
+                              _fromAnomalyModal: true
+                            });
+                            setMediaActiveSession(1);
+                            setIsAudioPlaying(false);
+                            setIsVideoPlaying(false);
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-300 rounded-xl text-xs font-bold transition-all cursor-pointer border border-blue-200/80 dark:border-blue-800 shadow-2xs hover:shadow-xs active:scale-98"
+                          title="查看转训检核多模态档案"
+                        >
+                          <Video size={13} className="text-blue-600 dark:text-blue-400" />
+                          <span>检核档案</span>
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -1543,7 +1578,7 @@ export const TrainingInspectionBoard: React.FC = () => {
 
       {/* 弹窗 5: 统一转训多模态档案 (音视频录像/工牌录音/实拍照/参训名单) */}
       {selectedMediaRecord && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 overflow-y-auto">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-5 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150 overflow-y-auto">
           <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-6xl w-full max-h-[92vh] overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col">
             
             {/* 1. 弹窗顶部标题栏 */}
@@ -1560,7 +1595,7 @@ export const TrainingInspectionBoard: React.FC = () => {
                     <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-900">
                       {selectedMediaRecord.storeCode}
                     </span>
-                    {dataViewTab === 'detailed' && (
+                    {dataViewTab === 'detailed' && !selectedMediaRecord._fromAnomalyModal && (
                       <span className="text-xs px-2.5 py-0.5 rounded-md bg-blue-600 text-white font-bold shadow-2xs">
                         {selectedMediaRecord.sessionName || `第${selectedMediaRecord.sessionNumber || 1}场次`}
                         {selectedMediaRecord.sessionStartTime ? ` (${selectedMediaRecord.sessionStartTime.split(' ')[1] || selectedMediaRecord.sessionStartTime}-${selectedMediaRecord.sessionEndTime ? (selectedMediaRecord.sessionEndTime.split(' ')[1] || selectedMediaRecord.sessionEndTime) : ''})` : ''}
@@ -1571,7 +1606,7 @@ export const TrainingInspectionBoard: React.FC = () => {
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    {selectedMediaRecord.storeName} &nbsp;|&nbsp; {selectedMediaRecord.region} · {selectedMediaRecord.district} &nbsp;|&nbsp; {selectedMediaRecord.date} &nbsp;|&nbsp; 主题: {appliedFilters.theme}
+                    {selectedMediaRecord.storeName} &nbsp;|&nbsp; {selectedMediaRecord.region} · {selectedMediaRecord.district} &nbsp;|&nbsp; {selectedMediaRecord.date || '2026-09-01'} &nbsp;|&nbsp; 主题: {appliedFilters.theme || 'XT5 PHEV对比宝马iX3'}
                   </p>
                 </div>
               </div>
@@ -1590,8 +1625,8 @@ export const TrainingInspectionBoard: React.FC = () => {
               </div>
             </div>
 
-            {/* 2. 场次选择页签 (仅在“场次聚合数据”视图下展示多场次切换；在“场次明细数据”页签下直接查看单场，按用户要求去掉此栏) */}
-            {dataViewTab !== 'detailed' && (
+            {/* 2. 场次选择页签 (展示多场次切换) */}
+            {(dataViewTab !== 'detailed' || selectedMediaRecord._fromAnomalyModal) && (
               <div className="px-6 py-2.5 bg-slate-100/70 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-3 shrink-0">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
@@ -1599,7 +1634,7 @@ export const TrainingInspectionBoard: React.FC = () => {
                     <span>转训场次:</span>
                   </span>
                   <div className="flex items-center gap-1.5">
-                    {Array.from({ length: Math.max(1, selectedMediaRecord.sessions || 1) }, (_, i) => i + 1).map((s) => {
+                    {Array.from({ length: Math.max(2, selectedMediaRecord.sessions || 2) }, (_, i) => i + 1).map((s) => {
                       const baseDate = selectedMediaRecord.date || '2026-09-01';
                       let sessionTimeRange = '';
                       if (s === 1) {
