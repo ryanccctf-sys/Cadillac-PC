@@ -128,6 +128,7 @@ export interface StoreInspectionRecord {
   endTime: string;
   videoMatchRate: number; // 视频比对录音匹配率
   photoMatchRate: number; // 参训照片与人数匹配率
+  attendanceRate?: number; // 参训率
   totalExecutionRate: number; // 转训检核总执行率
   
   // Abnormal flags
@@ -571,3 +572,13 @@ export const UNTRAINED_STORES_LIST: UnTrainedStore[] = [
   { id: 'UT-11', region: '华西大区', district: '四川小区', storeCode: 'SC002', storeName: '成都三和凯迪汽车服务店' },
   { id: 'UT-12', region: '华西大区', district: '重庆小区', storeCode: 'CQ001', storeName: '重庆美威凯迪拉克品鉴中心' },
 ];
+
+/**
+ * 获取门店/场次参训率 (若未显式指定，默认按合规情况计算，如照片异常时对齐识别率，通常为 100.0%)
+ */
+export const getAttendanceRate = (r?: Partial<StoreInspectionRecord> | null): number => {
+  if (!r) return 100.0;
+  if (r.attendanceRate !== undefined) return r.attendanceRate;
+  if (r.isPhotoAbnormal && r.photoMatchRate !== undefined) return r.photoMatchRate;
+  return 100.0;
+};

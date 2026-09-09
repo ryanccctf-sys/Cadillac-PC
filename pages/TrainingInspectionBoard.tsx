@@ -40,7 +40,8 @@ import {
   GENERATED_STORE_RECORDS,
   UNTRAINED_STORES_LIST,
   StoreInspectionRecord,
-  UnTrainedStore
+  UnTrainedStore,
+  getAttendanceRate
 } from './trainingInspectionData';
 
 export const TrainingInspectionBoard: React.FC = () => {
@@ -361,7 +362,7 @@ export const TrainingInspectionBoard: React.FC = () => {
     if (dataViewTab === 'aggregated') {
       headers = [
         '序号', '门店编码', '门店名称', '大区', '小区',
-        '视频比对录音匹配率', '参训照片与人数匹配率', '转训检核总执行率',
+        '视频比对录音匹配率', '参训照片与人数匹配率', '参训率', '转训检核总执行率',
         '对比思路总转训率(一级)', '竞品基本信息', '对比核心思路',
         '攻击总转训率(一级)', '攻击', '设计翻车', '动力成短板',
         '防守总转训率(一级)', '固定阻尼悬架', '补能焦虑', '视平线全景显示',
@@ -369,7 +370,7 @@ export const TrainingInspectionBoard: React.FC = () => {
       ];
       rows = tableFilteredAggregatedRecords.map((r, i) => [
         i + 1, r.storeCode, r.storeName, r.region, r.district,
-        `${r.videoMatchRate}%`, `${r.photoMatchRate}%`, `${r.totalExecutionRate}%`,
+        `${r.videoMatchRate}%`, `${r.photoMatchRate}%`, `${getAttendanceRate(r)}%`, `${r.totalExecutionRate}%`,
         `${r.comp1_contrast}%`, `${r.item1}%`, `${r.item2}%`,
         `${r.comp2_attack}%`, `${r.item3}%`, `${r.item4}%`, `${r.item5}%`,
         `${r.comp3_defense}%`, `${r.item6}%`, `${r.item7}%`, `${r.item8}%`,
@@ -379,7 +380,7 @@ export const TrainingInspectionBoard: React.FC = () => {
     } else {
       headers = [
         '序号', '门店编码', '门店名称', '日期', '大区', '小区', '转训场次', '转训开始时间', '转训结束时间',
-        '视频比对录音匹配率', '参训照片与人数匹配率', '转训检核总执行率',
+        '视频比对录音匹配率', '参训照片与人数匹配率', '参训率', '转训检核总执行率',
         '对比思路总转训率(一级)', '竞品基本信息', '对比核心思路',
         '攻击总转训率(一级)', '攻击', '设计翻车', '动力成短板',
         '防守总转训率(一级)', '固定阻尼悬架', '补能焦虑', '视平线全景显示',
@@ -387,7 +388,7 @@ export const TrainingInspectionBoard: React.FC = () => {
       ];
       rows = tableFilteredDetailedRecords.map((r, i) => [
         i + 1, r.storeCode, r.storeName, r.date, r.region, r.district, r.sessionName, r.sessionStartTime, r.sessionEndTime,
-        `${r.videoMatchRate}%`, `${r.photoMatchRate}%`, `${r.totalExecutionRate}%`,
+        `${r.videoMatchRate}%`, `${r.photoMatchRate}%`, `${getAttendanceRate(r)}%`, `${r.totalExecutionRate}%`,
         `${r.comp1_contrast}%`, `${r.item1}%`, `${r.item2}%`,
         `${r.comp2_attack}%`, `${r.item3}%`, `${r.item4}%`, `${r.item5}%`,
         `${r.comp3_defense}%`, `${r.item6}%`, `${r.item7}%`, `${r.item8}%`,
@@ -884,7 +885,7 @@ export const TrainingInspectionBoard: React.FC = () => {
                 
                 {/* Level 1 Group Header */}
                 <tr className="border-b border-slate-200 dark:border-slate-700 text-[11px]">
-                  <th colSpan={dataViewTab === 'detailed' ? 13 : 9} className="py-2.5 px-4 bg-slate-100/70 dark:bg-slate-900/80 border-r border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+                  <th colSpan={dataViewTab === 'detailed' ? 14 : 10} className="py-2.5 px-4 bg-slate-100/70 dark:bg-slate-900/80 border-r border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
                     门店基础信息与AI比对核验 {dataViewTab === 'aggregated' ? '（场次聚合）' : '（场次明细）'}
                   </th>
                   <th colSpan={3} className="py-2.5 px-3 bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-center border-r border-slate-200 dark:border-slate-700">
@@ -933,6 +934,7 @@ export const TrainingInspectionBoard: React.FC = () => {
 
                   <th className="py-3 px-3 text-center">视频比对录音匹配率</th>
                   <th className="py-3 px-3 text-center">参训照片与人数匹配率</th>
+                  <th className="py-3 px-3 text-center">参训率</th>
                   <th className="py-3 px-3.5 text-center font-bold text-blue-600 dark:text-blue-400 border-r border-slate-200 dark:border-slate-700">
                     转训检核总执行率
                   </th>
@@ -967,7 +969,7 @@ export const TrainingInspectionBoard: React.FC = () => {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-slate-700 dark:text-slate-200">
                 {paginatedRecords.length === 0 ? (
                   <tr>
-                    <td colSpan={dataViewTab === 'detailed' ? 29 : 26} className="py-12 text-center text-slate-400 dark:text-slate-500">
+                    <td colSpan={dataViewTab === 'detailed' ? 30 : 27} className="py-12 text-center text-slate-400 dark:text-slate-500">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <AlertTriangle size={24} className="text-amber-500/80" />
                         <span className="text-xs font-medium">暂无符合筛选条件的门店转训检核档案</span>
@@ -1072,6 +1074,13 @@ export const TrainingInspectionBoard: React.FC = () => {
                           ) : (
                             <span className="font-semibold text-slate-800 dark:text-slate-200">{r.photoMatchRate}%</span>
                           )}
+                        </td>
+
+                        {/* 参训率 */}
+                        <td className="py-3.5 px-3 text-center font-mono">
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">
+                            {getAttendanceRate(r)}%
+                          </span>
                         </td>
 
                         {/* 转训检核总执行率 */}
@@ -1604,6 +1613,9 @@ export const TrainingInspectionBoard: React.FC = () => {
                     <span className="text-xs px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-200/60 dark:border-emerald-800/60">
                       总执行率 {selectedMediaRecord.totalExecutionRate}%
                     </span>
+                    <span className="text-xs px-2.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold border border-blue-200/60 dark:border-blue-800/60">
+                      综合参训率 {getAttendanceRate(selectedMediaRecord)}%
+                    </span>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     {selectedMediaRecord.storeName} &nbsp;|&nbsp; {selectedMediaRecord.region} · {selectedMediaRecord.district} &nbsp;|&nbsp; {selectedMediaRecord.date || '2026-09-01'} &nbsp;|&nbsp; 主题: {appliedFilters.theme || 'XT5 PHEV对比宝马iX3'}
@@ -1681,6 +1693,10 @@ export const TrainingInspectionBoard: React.FC = () => {
                   <span className="text-slate-300 dark:text-slate-700">|</span>
                   <span className="text-slate-500 dark:text-slate-400">
                     综合照片人数匹配率：<strong className="text-blue-600 dark:text-blue-400 font-bold font-mono">{selectedMediaRecord.photoMatchRate}%</strong>
+                  </span>
+                  <span className="text-slate-300 dark:text-slate-700">|</span>
+                  <span className="text-slate-500 dark:text-slate-400">
+                    综合参训率：<strong className="text-indigo-600 dark:text-indigo-400 font-bold font-mono">{getAttendanceRate(selectedMediaRecord)}%</strong>
                   </span>
                 </div>
               </div>
@@ -1802,9 +1818,14 @@ export const TrainingInspectionBoard: React.FC = () => {
                     </div>
                     
                     {/* 规范指标展示 */}
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 shadow-2xs shrink-0">
-                      人数匹配率：{selectedMediaRecord.photoMatchRate}%
-                    </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/80 shadow-2xs">
+                        参训率：{getAttendanceRate(selectedMediaRecord)}%
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 shadow-2xs">
+                        人数匹配率：{selectedMediaRecord.photoMatchRate}%
+                      </span>
+                    </div>
                   </div>
 
                   {/* 参训照片与参训名单左右排布，高度与左边视频严格对齐为 h-[185px] */}
